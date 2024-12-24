@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Dashboard</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #007BFF;
+            margin-bottom: 20px;
+        }
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 30%;
+            text-align: center;
+        }
+        .card h3 {
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+        .card p {
+            font-size: 1.2em;
+            color: #333;
+        }
+        .chart-container {
+            width: 100%;
+            margin-top: 40px;
+        }
+        .product-list {
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sales Dashboard</h1>
+    
+    <div class="dashboard">
+        <div class="card" id="totalSales">
+            <h3>Total Sales</h3>
+            <p id="totalSalesAmount">$0.00</p>
+        </div>
+        <div class="card" id="totalItemsSold">
+            <h3>Total Items Sold</h3>
+            <p id="totalItemsAmount">0</p>
+        </div>
+        <div class="card" id="avgSales">
+            <h3>Average Sale Value</h3>
+            <p id="avgSaleAmount">$0.00</p>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="salesChart"></canvas>
+    </div>
+
+    <div class="product-list">
+        <h3>Product Sales Summary</h3>
+        <table id="productTable">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Total Quantity Sold</th>
+                    <th>Total Sales</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Product data will be populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <input type="file" id="csvFile" accept=".csv" onchange="loadCSV(event)" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let salesData = [];
+
+        // Function to read CSV file and process data
+        function loadCSV(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const rows = text.split('\n');
+                salesData = [];
+
+                // Assuming CSV structure: Product Name, Date, Quantity, Price, Total Sales
+                rows.forEach((row, index) => {
+                    if (index > 0 && row.trim()) { // Skip header row
+                        const data = row.split(',');
+                        const product = data[0];
+                        const date = data[1];
+                        const quantity = parseInt(data[2]);
+                        const price = parseFloat(data[3]);
+                        const totalSales = parseFloat(data[4]);
+
+                        salesData.push({ product, date, quantity, price, totalSales });
+                    }
+                });
+
+                updateDashboard();
+                updateChart();
+                displayProductSummary();
+            };
+
+            reader.readAsText(file);
+        }
+
+        // Function to update the dashboard with sales summary
+        function updateDashboard() {
+            const totalSales = salesData.reduce((sum, item) => sum + item.totalSales, 0);
+            const totalItemsSold = salesData.reduce((sum, item) => sum + item.quantity, 0);
+            const avgSale = totalSales / salesData.length || 0;  // Avoid division by zero
+
+            document.getElementById('totalSalesAmount').textContent = `$${totalSales.toFixed(2)}`;
+            document.getElementById('totalItemsAmount').textContent = totalItemsSold;
+            document.getElementById('avgSaleAmount').textContent = `$${avgSale.toFixed(2)}`;
+        }
+
+        // Function to update the chart with sales data
+        function updateChart() {
+            const labels = [...new Set(salesData.map(item => item.product))];
+            const salesByProduct = labels.map(product => {
+                return salesData
+                    .filter(item => item.product === product)
+                    .reduce((sum, item) => sum + item.totalSales, 0);
+            });
+
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales by Product',
+                        data: salesByProduct,
+                        backgroundColor: 'rgba(0, 123, 255, 0.6)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to display summarized product sales
+        function displayProductSummary() {
+            // Aggregate data by product
+            const aggregatedData = salesData.reduce((acc, item) => {
+                if (!acc[item.product]) {
+                    acc[item.product] = { totalQuantity: 0, totalSales: 0 };
+                }
+                acc[item.product].totalQuantity += item.quantity;
+                acc[item.product].totalSales += item.totalSales;
+                return acc;
+            }, {});
+
+            // Convert the aggregated data into an array and sort by total quantity sold
+            const sortedProducts = Object.keys(aggregatedData)
+                .map(product => ({
+                    product: product,
+                    totalQuantity: aggregatedData[product].totalQuantity,
+                    totalSales: aggregatedData[product].totalSales
+                }))
+                .sort((a, b) => b.totalQuantity - a.totalQuantity); // Sort by quantity sold
+
+            // Populate the table with the sorted data
+            const tableBody = document.getElementById('productTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = ''; // Clear previous data
+
+            sortedProducts.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.product}</td>
+                    <td>${product.totalQuantity}</td>
+                    <td>$${product.totalSales.toFixed(2)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>

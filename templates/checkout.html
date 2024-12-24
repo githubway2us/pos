@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Checkout</title>
+</head>
+<body>
+    <h1>Checkout</h1>
+    {% if success %}
+    <p>Payment successful! Thank you for your purchase.</p>
+    <a href="{{ url_for('index') }}">Back to Shop</a>
+    {% else %}
+    <form method="post">
+        <button type="submit">Pay Now</button>
+    </form>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Product</title>
+    <style>
+        /* เพิ่มการตกแต่งหน้า */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .product-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .product-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            background-color: #f8f8f8;
+            transition: background-color 0.3s;
+        }
+
+        .product-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .product-item span {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .product-item button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .product-item button:hover {
+            background-color: darkred;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            color: #007bff;
+            font-size: 16px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Delete Product</h1>
+        <ul class="product-list">
+            {% for product in products %}
+            <li class="product-item">
+                <span>{{ product.name }} - ${{ product.price }}</span>
+                <form action="{{ url_for('delete_product', product_id=loop.index0) }}" method="POST" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('index') }}">Back to Product List</a>
+    </div>
+</body>
+</html>
