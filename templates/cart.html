@@ -1,22 +1,419 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-    <title>Cart</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตะกร้าสินค้า</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #034d13;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .cart-list {
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px dashed #ccc;
+            transition: background-color 0.3s ease;
+        }
+
+        .cart-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .cart-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+
+        .cart-item-details {
+            flex: 1;
+        }
+
+        .cart-item-details h3 {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-details p {
+            font-size: 1em;
+            color: #555;
+        }
+
+        .remove-button {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .remove-button:hover {
+            background-color: #e63939;
+            transform: translateY(-2px);
+        }
+
+        .total-container {
+            text-align: right;
+            padding: 15px;
+            background-color: #034d13;
+            color: white;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .total-container h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .checkout-button {
+            background-color: #4caf50;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-top: 15px;
+        }
+
+        .checkout-button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .checkout-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .empty-cart {
+            text-align: center;
+            color: #555;
+            font-size: 1.2em;
+            padding: 20px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            color: #007bff;
+            margin-top: 20px;
+            font-size: 1em;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .modal-content h1 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        .modal-content button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 10px;
+            font-size: 1em;
+        }
+
+        .modal-content .confirm-btn {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .modal-content .confirm-btn:hover {
+            background-color: #45a049;
+        }
+
+        .modal-content .cancel-btn {
+            background-color: #ff4d4d;
+            color: white;
+        }
+
+        .modal-content .cancel-btn:hover {
+            background-color: #e63939;
+        }
+
+        #toast {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 20px;
+            }
+
+            .cart-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .cart-item img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .total-container {
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .checkout-button {
+                font-size: 1em;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Your Cart</h1>
-    <div>
+    <div class="container">
+        <h1><i class="fas fa-shopping-cart"></i> ตะกร้าสินค้า</h1>
         {% if cart %}
-        <ul>
-            {% for item in cart %}
-            <li>{{ item.name }} - ${{ item.price }} x {{ item.quantity }} = ${{ item.price * item.quantity }}</li>
-            {% endfor %}
-        </ul>
-        <h2>Total: ${{ total }}</h2>
-        <a href="{{ url_for('checkout') }}">Checkout</a>
+            <div class="cart-list">
+                {% for item in cart %}
+                    <div class="cart-item">
+                        <img src="{{ url_for('static', filename=item.image.replace('static/', '')) }}" alt="{{ item.name }}">
+                        <div class="cart-item-details">
+                            <h3>{{ item.name }}</h3>
+                            <p>ราคา: ฿{{ item.price | round(2) }} x {{ item.quantity }} = ฿{{ (item.price * item.quantity) | round(2) }}</p>
+                        </div>
+                        <button class="remove-button" onclick="removeFromCart('{{ item.name }}')"><i class="fas fa-trash-alt"></i> ลบ</button>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="total-container">
+                <h2>ยอดรวม: ฿{{ total | round(2) }}</h2>
+                <button class="checkout-button" onclick="openPaymentModal()">ชำระเงิน</button>
+            </div>
         {% else %}
-        <p>Your cart is empty.</p>
+            <div class="empty-cart">
+                <p>ตะกร้าสินค้าของคุณว่างเปล่า</p>
+                <a href="{{ url_for('index') }}" class="back-link"><i class="fas fa-arrow-left"></i> กลับไปเลือกสินค้า</a>
+            </div>
         {% endif %}
+        <a href="{{ url_for('index') }}" class="back-link"><i class="fas fa-arrow-left"></i> กลับสู่รายการสินค้า</a>
     </div>
+
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <h1>รับเงินจากลูกค้า</h1>
+            <div id="paymentCartItems"></div>
+            <label for="paymentAmount">จำนวนเงินที่รับ:</label>
+            <input type="number" id="paymentAmount" placeholder="0.00" oninput="calculateChange()">
+            <h3 style="color: red; font-size: 1.2em;" id="changeMessage"></h3>
+            <button class="confirm-btn" onclick="processPayment()">ยืนยันการชำระ</button>
+            <button class="cancel-btn" onclick="closeModal()">ปิด</button>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        let cart = {{ cart | tojson }};
+        let totalAmount = {{ total | tojson }};
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.backgroundColor = isError ? '#ff4d4d' : '#4caf50';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        function updateCart() {
+            const paymentCartItems = document.getElementById('paymentCartItems');
+            paymentCartItems.innerHTML = '';
+            cart.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.innerHTML = `
+                    <p>${item.name}: ฿${item.price.toFixed(2)} x ${item.quantity} = ฿${(item.price * item.quantity).toFixed(2)}</p>
+                `;
+                paymentCartItems.appendChild(itemElement);
+            });
+        }
+
+        function removeFromCart(productName) {
+            const index = cart.findIndex(item => item.name === productName);
+            if (index > -1) {
+                totalAmount -= cart[index].price * cart[index].quantity;
+                cart.splice(index, 1);
+                updateCart();
+                fetch('/update_cart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cart, total: totalAmount })
+                }).then(response => response.json()).then(data => {
+                    if (!data.success) {
+                        showToast('เกิดข้อผิดพลาดในการอัพเดตตะกร้า', true);
+                    } else {
+                        window.location.reload();
+                    }
+                }).catch(error => {
+                    showToast('เกิดข้อผิดพลาด: ' + error.message, true);
+                });
+            }
+        }
+
+        function openPaymentModal() {
+            if (cart.length === 0) {
+                showToast('ตะกร้าสินค้าว่างเปล่า กรุณาเพิ่มสินค้าก่อนชำระเงิน!', true);
+                return;
+            }
+            document.getElementById('paymentModal').style.display = 'flex';
+            updateCart();
+        }
+
+        function closeModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+
+        function calculateChange() {
+            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value) || 0;
+            const changeMessage = document.getElementById('changeMessage');
+            if (paymentAmount >= totalAmount) {
+                changeMessage.textContent = `เงินทอน: ฿${(paymentAmount - totalAmount).toFixed(2)}`;
+                changeMessage.style.color = 'green';
+            } else {
+                changeMessage.textContent = 'จำนวนเงินไม่เพียงพอ!';
+                changeMessage.style.color = 'red';
+            }
+        }
+
+        function processPayment() {
+            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value) || 0;
+            if (paymentAmount < totalAmount) {
+                showToast('จำนวนเงินไม่เพียงพอ!', true);
+                return;
+            }
+
+            const paymentDetails = {
+                totalAmount: totalAmount,
+                paymentAmount: paymentAmount,
+                cart: cart
+            };
+
+            fetch('/save_payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(paymentDetails)
+            }).then(response => response.json()).then(data => {
+                if (data.message) {
+                    fetch('/save_transaction', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            total: totalAmount,
+                            payment: paymentAmount,
+                            change: paymentAmount - totalAmount
+                        })
+                    }).then(() => {
+                        showToast(`ชำระเงินสำเร็จ! เงินทอน: ฿${(paymentAmount - totalAmount).toFixed(2)}`);
+                        cart = [];
+                        totalAmount = 0;
+                        sessionStorage.setItem('cart', JSON.stringify(cart));
+                        setTimeout(() => window.location.href = "{{ url_for('index') }}", 1000);
+                    });
+                } else {
+                    showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล!', true);
+                }
+            }).catch(error => {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, true);
+            });
+        }
+    </script>
 </body>
 </html>

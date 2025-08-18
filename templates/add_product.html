@@ -1,100 +1,176 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Product</title>
+    <title>เพิ่มสินค้า</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
         .container {
-            width: 60%;
-            margin: 50px auto;
-            background-color: #fff;
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: white;
             padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             text-align: center;
-            color: #333;
-            margin-bottom: 30px;
+            color: #034d13;
+            font-size: 2em;
+            margin-bottom: 20px;
         }
 
-        label {
-            font-weight: bold;
-            color: #555;
-            margin-bottom: 10px;
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
             display: block;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 5px;
         }
 
-        input[type="text"], input[type="number"], input[type="file"] {
+        .form-group input {
             width: 100%;
             padding: 10px;
-            margin: 10px 0 20px 0;
+            font-size: 1em;
+            border-radius: 8px;
             border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
         }
 
-        button {
-            background-color: #4CAF50;
+        .form-group input[type="file"] {
+            padding: 5px;
+        }
+
+        .submit-button {
+            background-color: #4caf50;
             color: white;
-            padding: 15px 20px;
+            padding: 12px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             width: 100%;
-            font-size: 16px;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        button:hover {
+        .submit-button:hover {
             background-color: #45a049;
+            transform: translateY(-2px);
         }
 
-        a {
+        .back-link {
             display: block;
             text-align: center;
             color: #007bff;
-            margin-top: 20px;
-            font-size: 16px;
+            font-size: 1em;
             text-decoration: none;
+            margin-top: 20px;
+            transition: color 0.3s ease;
         }
 
-        a:hover {
+        .back-link:hover {
+            color: #0056b3;
             text-decoration: underline;
         }
 
-        .form-footer {
-            text-align: center;
-            margin-top: 20px;
+        #toast {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .submit-button {
+                font-size: 1em;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Add New Product</h1>
-        <form action="{{ url_for('add_product') }}" method="post" enctype="multipart/form-data">
-            <label for="name">Product Name:</label>
-            <input type="text" id="name" name="name" required>
-
-            <label for="price">Price:</label>
-            <input type="number" id="price" name="price" step="0.01" required>
-
-            <label for="image">Product Image:</label>
-            <input type="file" id="image" name="image" accept="image/*" required>
-
-            <button type="submit">Add Product</button>
+        <h1><i class="fas fa-plus"></i> เพิ่มสินค้า</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="name">ชื่อสินค้า:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="price">ราคา:</label>
+                <input type="number" id="price" name="price" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="image">รูปภาพ:</label>
+                <input type="file" id="image" name="image" accept="image/*" required>
+            </div>
+            <button type="submit" class="submit-button">เพิ่มสินค้า</button>
         </form>
-        <div class="form-footer">
-            <a href="{{ url_for('index') }}">Back to Product List</a>
-        </div>
+        <a href="{{ url_for('index') }}" class="back-link"><i class="fas fa-arrow-left"></i> กลับสู่หน้าหลัก</a>
     </div>
+
+    <div id="toast"></div>
+
+    <script>
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.backgroundColor = isError ? '#ff4d4d' : '#4caf50';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            try {
+                const response = await fetch('/add_product', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    showToast('เพิ่มสินค้าสำเร็จ');
+                    setTimeout(() => window.location.href = "{{ url_for('index') }}", 1000);
+                } else {
+                    const data = await response.json();
+                    showToast('เกิดข้อผิดพลาด: ' + data.error, true);
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, true);
+            }
+        });
+    </script>
 </body>
 </html>
