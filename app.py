@@ -147,31 +147,33 @@ def delete_page():
     return render_template('delete_product.html', products=products)
 
 # ลบสินค้า
+# 1. Better secret key
+app.secret_key = os.urandom(32)
+
+# 2. Fix delete_product (most dangerous bug right now)
 @app.route('/delete_product/<int:product_id>', methods=['POST'])
 def delete_product(product_id):
-    if not os.path.exists('products.json'):
-        return jsonify({'error': 'ไม่พบสินค้า'}), 404
+    products = load_products()
+    original_len = len(products)
+    products = [p for p in products if p.get('id') != product_id]
+    
+    if len(products) == original_len:
+        return jsonify({'error': 'ไม่พบสินค้านี้'}), 404
+        
+    # ลบรูป
+    for p in load_products():  # load again to get old image path
+        if p['id'] == product_id and os.path.exists(p['image']):
+            os.remove(p['image'])
+            break
+            
+    save_products(products)
+    return jsonify({'message': 'ลบเรียบร้อยแล้ว'})
 
-    with open('products.json', 'r', encoding='utf-8') as f:
-        products = json.load(f)
+# 3. Store relative image path (recommended change)
+# In add_product & edit_product change:
 
-    if product_id < 0 or product_id >= len(products):
-        return jsonify({'error': 'สินค้าไม่ถูกต้อง'}), 400
 
-    # ลบรูปภาพด้วย
-    image_path = products[product_id]['image']
-    if os.path.exists(image_path):
-        os.remove(image_path)
-
-    # ลบสินค้าออกจากรายการ
-    deleted_product = products.pop(product_id)
-
-    # บันทึกรายการสินค้าใหม่
-    with open('products.json', 'w', encoding='utf-8') as f:
-        json.dump(products, f, ensure_ascii=False, indent=4)
-
-    return jsonify({'message': f'ลบสินค้า "{deleted_product["name"]}" เรียบร้อยแล้ว'})
-
+# Then in template use: <img src="{{ url_for('static', filename=product.image) }}">
 # ---------------- Cart ----------------
 @app.route('/cart')
 def cart():
@@ -332,4 +334,4 @@ def sales_summary(period):
 
 # ---------------- Run App ----------------
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=3000)
+    app.run(debug=True, host="0.0.0.0", port=3600)

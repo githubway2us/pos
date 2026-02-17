@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "มือกุหลาบ5",
+    "price": 5.0,
+    "image": "static/uploads/5_1.png"
+  },
+  {
+    "id": 2,
+    "name": "น้ำแดง",
+    "price": 10.0,
+    "image": "static/uploads/2.png"
+  },
+  {
+    "id": 3,
+    "name": "บายศรี",
+    "price": 60.0,
+    "image": "static/uploads/3.png"
+  },
+  {
+    "id": 4,
+    "name": "ผลไม้5อย่าง",
+    "price": 85.0,
+    "image": "static/uploads/5_4.png"
+  },
+  {
+    "id": 5,
+    "name": "ไหว้พิฆเนตร",
+    "price": 25.0,
+    "image": "static/uploads/5.png"
+  }
+]
